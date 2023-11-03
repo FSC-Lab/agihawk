@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="quad_name" default="iris"/>
+    <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
+    <arg name="gcs_url" default="" />   <!-- GCS link is provided by SITL -->
+    <arg name="tgt_system" default="1" />
+    <arg name="tgt_component" default="1" />
+
+    <!-- Launch MavROS -->
+    <group ns="$(arg quad_name)">
+      <include file="$(find mavros)/launch/node.launch">
+        <arg name="pluginlists_yaml" value="$(find mavros)/launch/px4_pluginlists.yaml" />
+        <arg name="config_yaml" value="$(find agihawk)/resources/mavros_files/px4_config.yaml" />
+        <arg name="fcu_url" value="$(arg fcu_url)" />
+        <arg name="gcs_url" value="$(arg gcs_url)" />
+        <arg name="tgt_system" value="$(arg tgt_system)" />
+        <arg name="tgt_component" value="$(arg tgt_component)" />
+      </include>
+    </group>
+
+    <!-- Launch PX4 SITL -->
+    <arg name="world_name" default="$(find agihawk)/resources/gazebo_files/px4/worlds/basic.world" />
+    <arg name="paused" value="false"/>
+    <arg name="gui" default="false"/>
+    <arg name="model" default="iris_stereo_camera"/>
+    <arg name="vehicle" default="iris_obs_avoid"/>
+    <include file="$(find px4)/launch/px4.launch">
+      <arg name="vehicle" value="$(arg vehicle)"/>
+    </include>
+
+    <!-- Launch Gazebo -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" value="$(arg world_name)" />
+      <arg name="paused" value="$(arg paused)"/>
+      <arg name="gui" value="$(arg gui)"/>
+    </include>
+
+    <!-- Spawn vehicle model -->
+    <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" output="screen"
+      args="-sdf -database $(arg model) -model $(arg vehicle)">
+    </node>
+
+    <arg name="pilot_config" default="px4_sim_pilot.yaml"/>
+    <arg name="thrust_ratio" default="1.0"/>
+
+    <!-- Launch Autopilot !-->
+    <group ns="$(arg quad_name)">
+        <node name="agiros_pilot" pkg="agihawk" type="agihawk" output="screen">
+            <param name="agi_param_dir" value="$(find agihawk)/parameters/agiparams"/>
+            <param name="ros_param_dir" value="$(find agihawk)/parameters"/>
+            <param name="pilot_config" value="$(arg pilot_config)"/>
+            <param name="thrust_ratio" value="$(arg thrust_ratio)"/>
+            <remap from="agiros_pilot/odometry_estimate" to="mavros/local_position/odom"/>
+            <!-- <remap from="agiros_pilot/imu_in" to="ground_truth/imu"/> -->
+            <!-- <remap from="agiros_pilot/motor_speed" to="/$(arg quad_name)/motor_speed"/> -->
+            <!-- <remap from="agiros_pilot/guard_odometry_estimate" to="mavros/local_position/odom"/> -->
+        </node>
+    </group>
+
+    <!-- Visualization -->
+    <node pkg="rviz" type="rviz" name="viz_face" args="-d $(find agihawk)/resources/rviz/px4_simulation.rviz"
+          ns="$(arg quad_name)"/>
+
+    <!-- GUI -->
+    <node name="agiros_gui" pkg="rqt_gui" type="rqt_gui"
+          args="-s agiros_gui.basic_flight.BasicFlight --args --quad_name $(arg quad_name)" output="screen"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" 
+        args="0 0 0 0 0 0 1 world map 100" />
+
+</launch>

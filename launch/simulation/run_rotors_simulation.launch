@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="quad_name" default="kingfisher"/>
+    <arg name="pilot_config" default="rotors_sim_pilot.yaml"/>
+
+    <!-- Launch Gazebo simulation environment !-->
+    <arg name="mav_name" default="$(arg quad_name)"/>
+    <arg name="model" value="$(find agihawk)/resources/gazebo_files/rotors/models/$(arg quad_name)_model.gazebo"/>
+    <arg name="world_name" default="$(find agihawk)/resources/gazebo_files/rotors/worlds/basic.world"/>
+    <arg name="enable_logging" default="false"/>
+    <arg name="enable_ground_truth" default="true"/>
+    <arg name="log_file" default="$(arg mav_name)"/>
+    <arg name="paused" value="false"/>
+    <arg name="gui" default="true"/>
+    <arg name="use_ground_truth" value="true"/>
+    <arg name="verbose" default="false"/>
+    <arg name="debug" default="false"/>
+    <arg name="x_init" default="0"/>
+    <arg name="y_init" default="0"/>
+    <include file="$(find agihawk)/launch/simulation/base_quad_simulation.launch">
+        <arg name="quad_name" value="$(arg quad_name)"/>
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="use_ground_truth" value="$(arg use_ground_truth)"/>
+
+        <arg name="mav_name" value="$(arg mav_name)"/>
+        <arg name="model" value="$(arg model)"/>
+        <arg name="enable_logging" value="$(arg enable_logging)"/>
+        <arg name="enable_ground_truth" value="$(arg enable_ground_truth)"/>
+        <arg name="log_file" value="$(arg log_file)"/>
+        <arg name="verbose" default="$(arg verbose)"/>
+        <arg name="debug" default="$(arg debug)"/>
+
+        <arg name="x_init" value="$(arg x_init)"/>
+        <arg name="y_init" value="$(arg y_init)"/>
+    </include>
+
+    <!-- Launch Autopilot !-->
+    <group ns="$(arg quad_name)">
+        <node name="agiros_pilot" pkg="agihawk" type="agihawk" output="screen">
+            <param name="agi_param_dir" value="$(find agihawk)/parameters/agiparams"/>
+            <param name="ros_param_dir" value="$(find agihawk)/parameters"/>
+            <param name="pilot_config" value="$(arg pilot_config)"/>
+            <remap from="agiros_pilot/odometry_estimate" to="ground_truth/odometry"/>
+            <remap from="agiros_pilot/imu_in" to="ground_truth/imu"/>
+            <remap from="agiros_pilot/motor_speed" to="/$(arg quad_name)/motor_speed"/>
+            <remap from="agiros_pilot/guard_odometry_estimate" to="ground_truth/odometry"/>
+        </node>
+    </group>
+
+    <!-- Visualization -->
+    <node pkg="rviz" type="rviz" name="viz_face" args="-d $(find agihawk)/resources/rviz/rotors_simulation.rviz"
+          ns="$(arg quad_name)"/>
+
+    <!-- GUI -->
+    <node name="agiros_gui" pkg="rqt_gui" type="rqt_gui"
+          args="-s agiros_gui.basic_flight.BasicFlight --args --quad_name $(arg quad_name)" output="screen"/>
+
+</launch>
