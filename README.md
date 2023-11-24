@@ -43,7 +43,7 @@ In the following section we guide you through installing and running a Gazebo si
    ```
 4. Download mavros
    ```
-   sudo apt-get install ros-noetic-mavros
+   sudo apt-get install ros-$ROS_DISTRO-mavros
    ```
    
 1. Finally, set the ROS_PACKAGE_PATH and GAZEBO_MODEL_PATH in your bashrc. Ensure your ~/.bashrc is setup correctly so that each new terminal is sourced correctly:  
@@ -85,8 +85,27 @@ Follow the guide in `https://github.com/uzh-rpg/agilicious` to install the Agili
     export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$px4_dir/Tools/sitl_gazebo
     ```
 
+## IV. Downgrade the PyQt5
+In order to use the rpt_gui, we need to downgrade the PyQt5 to 5.10.1 to match the version rpt
+
+```
+pip install PyQt5==5.10.1
+```
+
 # Run Agihawk With the Gazebo Simulator
 Open a new terminal to automatically source the bashrc file. Use launch file to put everything together
 ```
 roslaunch agihawk run_px4_simulation.launch 
+```
+
+# Run Agihawk With the RotorS Simulator
+```
+git clone https://github.com/ethz-asl/rotors_simulator
+
+sudo apt-get install ros-$ROS_DISTRO-joy ros-$ROS_DISTRO-octomap-msgs ros-$ROS_DISTRO-octomap-ros ros-$ROS_DISTRO-mavlink protobuf-compiler libgoogle-glog-dev  ros-$ROS_DISTRO-control-toolbox ros-$ROS_DISTRO-gazebo-plugins
+
+```
+
+```
+roslaunch agihawk run_rotors_simulation.launch
 ```
