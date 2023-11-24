@@ -18,7 +18,7 @@ In the following section we guide you through installing and running a Gazebo si
    cd ~/Firmware
    ```
 
-1. Install [PX4 dependencies](http://dev.px4.io/en/setup/dev_env_linux_ubuntu.html#common-dependencies). 
+2. Install [PX4 dependencies](http://dev.px4.io/en/setup/dev_env_linux_ubuntu.html#common-dependencies). 
    ```bash
    # Install PX4 "common" dependencies.
    ./Tools/setup/ubuntu.sh --no-sim-tools --no-nuttx
@@ -26,7 +26,7 @@ In the following section we guide you through installing and running a Gazebo si
    # Gstreamer plugins (for Gazebo camera)
    sudo apt install gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev
 
-1. Build the Firmware once in order to generate SDF model files for Gazebo.
+3. Build the Firmware once in order to generate SDF model files for Gazebo.
    This step will actually run a simulation (that you can immediately close).
 
    ```bash
@@ -41,7 +41,11 @@ In the following section we guide you through installing and running a Gazebo si
    # Setup some more Gazebo-related environment variables (modify this line based on the location of the Firmware folder on your machine)
    . ~/Firmware/Tools/simulation/gazebo-classic/setup_gazebo.bash ~/Firmware ~/Firmware/build/px4_sitl_default
    ```
-
+4. Download mavros
+   ```
+   sudo apt-get install ros-noetic-mavros
+   ```
+   
 1. Finally, set the ROS_PACKAGE_PATH and GAZEBO_MODEL_PATH in your bashrc. Ensure your ~/.bashrc is setup correctly so that each new terminal is sourced correctly:  
     ```bash
     sudo gedit ~/.bashrc
@@ -65,6 +69,8 @@ Follow the guide in `https://github.com/uzh-rpg/agilicious` to install the Agili
     ```
     cd ~/agi_ws/src
     git clone https://github.com/FSC-Lab/agihawk
+    git clone https://github.com/catkin/catkin_simple
+    git clone https://github.com/ethz-asl/mav_comm.git
     catkin build 
     ```
 1. Go to the ~/.bashrc setup and add the following line **before** the px4 firmware setups. The content should look like:
